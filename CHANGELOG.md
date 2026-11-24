@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0] - 2026-11-24
+
+- Pedestals only detect items: an item resting on a pedestal (and accepted by `CanAccept`) counts, nothing is fixed in
+  place, and taking it off empties the pedestal again. The receptacle completes once every pedestal is filled at the
+  same time. `ObjectivePedestal.Item` / `Contains`; `ObjectiveItem.Place` is no longer used by pedestals.
+
 ## [0.2.0] - 2026-11-24
 
 - Pedestals: `ObjectivePedestal`, and `ObjectiveReceptacle` lays out one per item needed from a prefab (rows along

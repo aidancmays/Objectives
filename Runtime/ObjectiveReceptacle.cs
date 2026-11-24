@@ -11,8 +11,8 @@ namespace Objectives
     /// </summary>
     /// <remarks>
     /// With pedestals (<see cref="ObjectivePedestal"/> children, plus copies of <c>Pedestal Prefab</c> laid out in rows
-    /// until there is one per item needed), an item let go on an empty pedestal is fixed there and stays. Pedestals
-    /// beyond the number needed are hidden. Without pedestals, the host consumes each item that enters the area.
+    /// until there is one per item needed), it completes once every pedestal has an item resting on it at the same
+    /// time (items are left free; a held item doesn't count). Pedestals beyond the number needed are hidden. Without pedestals, the host consumes each item that enters the area.
     /// Pedestals are made locally on every machine from the same count, so they are never networked.
     /// </remarks>
     public sealed class ObjectiveReceptacle : Objective
@@ -39,7 +39,8 @@ namespace Objectives
         int laidOutFor = -1;
 
         /// <summary>
-        /// Host: whether an item inside the area may be taken now (for example, not while someone still holds it).
+        /// Whether an item in the area or on a pedestal counts now (for example, not while someone still holds it).
+        /// Checked on every machine, so base it on synced state.
         /// Null = always. Applies to every receptacle; set it once from game code (it is not cleared between play
         /// sessions, so a RuntimeInitializeOnLoadMethod works).
         /// </summary>
@@ -90,13 +91,12 @@ namespace Objectives
             int needed = Needed;
             if (needed != laidOutFor && UsesPedestals)
                 LayOut(needed);
-            foreach (var p in pedestals)
-                p.Refresh();
+            Detect();
 
             if (!Running)
                 return;
-            if (needed > 0)
-                Take();
+            if (needed > 0 && pedestals.Count == 0)
+                Consume();
             int count = pedestals.Count > 0 ? DeliveredCount : delivered;
             if (count >= needed)
                 Complete();
@@ -104,25 +104,43 @@ namespace Objectives
                 SetState(count > 0 ? ObjectiveState.Active : ObjectiveState.Incomplete, count / (float)needed);
         }
 
-        void Take()
+        // Every machine: which item rests on which pedestal (one each), from where the items are now.
+        readonly HashSet<ObjectiveItem> counted = new();
+
+        void Detect()
+        {
+            if (pedestals.Count == 0)
+                return;
+            counted.Clear();
+            foreach (var p in pedestals)
+            {
+                ObjectiveItem found = null;
+                if (p.Item != null && Usable(p.Item) && p.Contains(p.Item))
+                    found = p.Item; // keep the same item while it stays
+                else
+                    foreach (var item in ObjectiveItem.All)
+                        if (Usable(item) && !counted.Contains(item) && p.Contains(item))
+                        {
+                            found = item;
+                            break;
+                        }
+                if (found != null && !counted.Add(found))
+                    found = null;
+                p.Set(found);
+            }
+        }
+
+        bool Usable(ObjectiveItem item)
+            => item != null && item.isActiveAndEnabled && !item.Delivered && (string.IsNullOrEmpty(kind) || item.Kind == kind) && Accepts(item);
+
+        // Without pedestals: the host consumes items that enter the area.
+        void Consume()
         {
             var items = ObjectiveItem.All;
             for (int i = items.Count - 1; i >= 0; i--)
             {
                 var item = items[i];
-                if (item == null || item.Delivered || item.IsPlaced || (!string.IsNullOrEmpty(kind) && item.Kind != kind))
-                    continue;
-                var at = item.transform.position;
-                if (pedestals.Count > 0)
-                {
-                    foreach (var p in pedestals)
-                        if (!p.IsFilled && p.Area.Contains(p.transform, at) && Accepts(item))
-                        {
-                            p.Take(item);
-                            break;
-                        }
-                }
-                else if (area.Contains(transform, at) && Accepts(item))
+                if (Usable(item) && area.Contains(transform, item.transform.position))
                 {
                     delivered++;
                     item.Consume();

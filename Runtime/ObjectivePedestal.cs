@@ -3,15 +3,15 @@ using UnityEngine;
 namespace Objectives
 {
     /// <summary>
-    /// One place on an <see cref="ObjectiveReceptacle"/> where an item is set down: an item let go inside its area is
-    /// fixed at its socket and stays there. Which pedestals hold an item is worked out on every machine from where the
-    /// placed items are, so nothing about pedestals needs syncing.
+    /// One place on an <see cref="ObjectiveReceptacle"/> where an item is set down. The pedestal only notices an item
+    /// resting in its area; it doesn't hold on to it, so the item can be picked up again and the pedestal is empty
+    /// once more. Worked out on every machine from where the items are, so nothing about pedestals needs syncing.
     /// </summary>
     public sealed class ObjectivePedestal : MonoBehaviour
     {
         [Tooltip("Where an item counts as set on the pedestal.")]
         [SerializeField] ObjectiveArea area = new(new Vector3(0f, 0.9f, 0f), new Vector3(1.4f, 1.6f, 1.4f));
-        [Tooltip("Where the item is fixed. Empty = this transform.")]
+        [Tooltip("Where an item sits on the pedestal (for tools and gizmos). Empty = this transform.")]
         [SerializeField] Transform socket;
         [Tooltip("Shown while empty / once it holds an item (every machine).")]
         [SerializeField] GameObject empty;
@@ -22,37 +22,17 @@ namespace Objectives
         public ObjectiveArea Area => area;
         public Transform Socket => socket != null ? socket : transform;
 
-        /// <summary>The item on this pedestal, or null (every machine).</summary>
+        /// <summary>The item resting on this pedestal right now, or null (every machine).</summary>
         public ObjectiveItem Item { get; private set; }
 
         public bool IsFilled => Item != null;
 
-        /// <summary>Finds a placed item sitting at the socket (every machine).</summary>
-        internal void Refresh()
-        {
-            if (Item != null && (!Item.isActiveAndEnabled || !Item.IsPlaced))
-                Item = null;
-            if (Item == null)
-                foreach (var item in ObjectiveItem.All)
-                    if (item != null && item.IsPlaced && (item.transform.position - Socket.position).sqrMagnitude < 0.01f)
-                    {
-                        Item = item;
-                        break;
-                    }
-            Show(Item != null);
-        }
+        public bool Contains(ObjectiveItem item) => item != null && area.Contains(transform, item.transform.position);
 
-        internal void Take(ObjectiveItem item)
+        internal void Set(ObjectiveItem item)
         {
-            item.Place(Socket);
             Item = item;
-            Show(true);
-        }
-
-        internal void Clear()
-        {
-            Item = null;
-            Show(false);
+            Show(item != null);
         }
 
         void Show(bool value)
