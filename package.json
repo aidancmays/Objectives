@@ -1,8 +1,8 @@
 {
   "name": "com.aidancmays.objectives",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "Objectives",
-  "description": "Networked objectives for Netcode for GameObjects: objectives placed anywhere in a level, a host-authoritative tracker that syncs their state to clients without making each one a NetworkObject, gates that stay shut until every required objective is done, two ready-made objective types (pressure plates, hold an area), and items an objective hands out for players to bring to a receptacle. A debug panel lists and completes objectives.",
+  "description": "Networked objectives for Netcode for GameObjects: objectives placed anywhere in a level, a host-authoritative tracker that syncs their state to clients without making each one a NetworkObject, gates that stay shut until every required objective is done, two ready-made objective types (pressure plates, hold an area), and items an objective hands out for players to set on pedestals at a receptacle. A debug panel lists and completes objectives.",
   "unity": "6000.3",
   "documentationUrl": "",
   "keywords": ["objectives", "quests", "netcode", "multiplayer", "co-op", "puzzle"],

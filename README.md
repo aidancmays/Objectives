@@ -8,7 +8,7 @@ Gates stay shut until every required objective is done.
 ## Install
 
 ```json
-"com.aidancmays.objectives": "https://github.com/aidancmays/Objectives.git#v0.1.0"
+"com.aidancmays.objectives": "https://github.com/aidancmays/Objectives.git#v0.2.0"
 ```
 
 Depends on Netcode for GameObjects 2.14 and the Input System (for the debug panel key).
@@ -26,6 +26,7 @@ Depends on Netcode for GameObjects 2.14 and the Input System (for the debug pane
 | `ObjectiveReward` | On an objective: once it completes, the host spawns an `ObjectiveItem` prefab at a spawn point (in the objective's scene). Lost items (fallen out of the world, despawned) come back after a delay. |
 | `ObjectiveItem` | NetworkBehaviour on the item prefab (add your own carry/physics components). `Consume()` delivers it, `Kind` filters receptacles. |
 | `ObjectiveReceptacle` | An objective of its own: completes once enough items have entered its area (default: one per objective with a reward). The host consumes each item. `ObjectiveReceptacle.CanAccept` lets game code refuse items, e.g. while still held. Put one by the exit and gate the exit on the tracker: the way opens once every objective is done and every item brought. |
+| `ObjectivePedestal` | A place on a receptacle where an item is set down: an item let go in its area is fixed at its socket, kinematic and out of reach of grab raycasts (Ignore Raycast layer), for good. A receptacle with a *Pedestal Prefab* lays out one per item needed, in centred rows. |
 | `ObjectiveArea` | Serializable box standing on a transform, used by the above. |
 | `ObjectivePlayers` | Where the players are: spawned NGO player objects, or your own `Source`. |
 | `ObjectiveDebugPanel` | F10: every tracker's objectives; on the host, complete or reset them. |

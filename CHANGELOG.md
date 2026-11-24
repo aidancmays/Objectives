@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0] - 2026-11-24
+
+- Pedestals: `ObjectivePedestal`, and `ObjectiveReceptacle` lays out one per item needed from a prefab (rows along
+  local X, stepping back along -Z) plus any hand-placed children. Items let go on a pedestal are fixed there
+  (`ObjectiveItem.Place`, synced `IsPlaced`, colliders moved to a layer grabbing skips). Without pedestals the
+  receptacle consumes items as before.
+
 ## [0.1.0] - 2026-11-24
 
 - `Objective` base (state, progress, required, signals to the host), `ObjectiveTracker` (host-authoritative,
